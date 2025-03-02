@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Chemical Compatibility Checker - ChemCheck</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000428;
+            color: lavender;
+            overflow: hidden;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        h1, form, h3, a, .about-us, .history, .fact {
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        form {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        select, button {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.2);
+            color: lavender;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: lavender;
+            color: #004e92;
+            transform: scale(1.05);
+        }
+
+        a { color: lavender; text-decoration: none; margin-top: 10px; }
+
+        .about-us {
+            max-width: 800px;
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .history, .fact {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid lavender;
+            padding: 8px;
+            text-align: center;
+        }
+
+        #darkModeToggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px;
+            background: lavender;
+            color: black;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .dark body {
+            background-color: #121212;
+            color: #f8f8f8;
+        }
+
+        .dark form, .dark .about-us, .dark .history, .dark .fact {
+            background: rgba(50, 50, 50, 0.9);
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="particlesCanvas"></canvas>
+
+<h1>⚗️ Chemical Compatibility Checker ⚗️</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <label>Select Chemical 1:</label>
+    <select name="chemical1">
+        {% for chemical in chemicals %}
+        <option value="{{ chemical.id }}">{{ chemical.name }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <label>Select Chemical 2:</label>
+    <select name="chemical2">
+        {% for chemical in chemicals %}
+        <option value="{{ chemical.id }}">{{ chemical.name }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <button type="submit">Check Compatibility</button>
+</form>
+
+{% if result %}
+    <h3>{{ result }}</h3>
+{% endif %}
+
+<a href="{% url 'dashboard' %}">⬅️ Back to Dashboard</a>
+
+<div class="about-us">
+    <h2>About Us</h2>
+    <p><strong>Welcome to ChemCheck</strong>, your trusted chemical safety partner. Our mission is to provide accurate and reliable compatibility data to prevent accidents and ensure safe operations.</p>
+    <p><strong>Founded by:</strong> Chatura Palanivelrajan</p>
+</div>
+
+<div class="history">
+    <h3>Recent Compatibility Checks</h3>
+    <table>
+        <tr><th>Chemical 1</th><th>Chemical 2</th><th>Result</th></tr>
+        {% for check in history %}
+        <tr>
+            <td>{{ check.chemical1 }}</td>
+            <td>{{ check.chemical2 }}</td>
+            <td>{{ check.result }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="fact">
+    <h3>💡 Did You Know?</h3>
+    <p id="randomFact">Loading...</p>
+</div>
+
+<button id="darkModeToggle">Toggle Dark Mode</button>
+
+<script>
+    // Particle Animation (floating molecules)
+    const canvas = document.getElementById('particlesCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    for (let i = 0; i < 50; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 6 + 2,
+            dx: (Math.random() - 0.5) * 2,
+            dy: (Math.random() - 0.5) * 2
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(173, 216, 230, 0.7)';
+        particles.forEach(p => {
+            p.x += p.dx;
+            p.y += p.dy;
+            if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Dark Mode Toggle
+    const body = document.body;
+    document.getElementById('darkModeToggle').addEventListener('click', () => {
+        body.classList.toggle('dark');
+    });
+
+    // Random Chemical Fact Generator
+    const facts = [
+        "Water can boil and freeze at the same time (Triple Point).",
+        "Oxygen is colorless as a gas, but pale blue as a liquid.",
+        "Mercury is the only metal that is liquid at room temperature.",
+        "Hydrogen is the most abundant element in the universe.",
+        "Some metals explode in contact with water, like Potassium.",
+        "The smell of rain is caused by a chemical called Geosmin."
+    ];
+    document.getElementById('randomFact').innerText = facts[Math.floor(Math.random() * facts.length)];
+
+    // Adjust Canvas on Resize
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Chemical Inventory List - HazChemTrack</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #001f3f;
+            color: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            margin: 20px 0;
+            animation: fadeInDown 1s ease-in-out;
+        }
+
+        table {
+            width: 90%;
+            max-width: 1200px;
+            border-collapse: collapse;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        th {
+            background-color: #0074D9;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        a {
+            color: #FFDC00;
+            text-decoration: none;
+            margin-top: 20px;
+            display: inline-block;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-banned {
+            background-color: #FF4136;
+            color: white;
+            font-weight: bold;
+        }
+
+        .status-allowed {
+            background-color: #2ECC40;
+            color: white;
+            font-weight: bold;
+        }
+
+        .hazard-rating {
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🧪 Chemical Inventory List - HazChemTrack 🧪</h1>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Expiry Date</th>
+        <th>Hazard Rating</th>
+        <th>Banned Status</th>
+    </tr>
+    {% for chemical in chemicals %}
+    <tr>
+        <td>{{ chemical.name }}</td>
+        <td>{{ chemical.expiry_date }}</td>
+        <td class="hazard-rating" style="color: {% if chemical.hazard_rating >= 8 %}#FF4136{% elif chemical.hazard_rating >= 5 %}#FF851B{% else %}#2ECC40{% endif %};">
+            {{ chemical.hazard_rating }}
+        </td>
+        <td class="{% if chemical.banned_status %}status-banned{% else %}status-allowed{% endif %}">
+            {{ chemical.banned_status|yesno:"BANNED,Allowed" }}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="{% url 'dashboard' %}">⬅️ Back to Dashboard</a>
+
+<footer>
+    Powered by HazChemTrack | Built with ❤️ for safe industries | Founder: Chatura Palanivelrajan
+</footer>
+
+</body>
+</html>
